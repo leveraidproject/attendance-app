@@ -24,16 +24,24 @@ export default function Shell({ profile, user, active, children }) {
     <div className="min-h-screen">
       <header className="bg-ink text-white">
         <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 px-5 py-4">
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center gap-4">
             <span className="text-lg font-semibold">{COMPANY_NAME}</span>
-            <nav className="flex gap-1">
+            <nav className="flex flex-wrap gap-1">
               <Link href="/dashboard" className={linkClass('dashboard')}>
                 My time
               </Link>
               {isAdmin && (
-                <Link href="/admin" className={linkClass('admin')}>
-                  All employees
-                </Link>
+                <>
+                  <Link href="/admin" className={linkClass('overview')}>
+                    Overview
+                  </Link>
+                  <Link href="/admin/records" className={linkClass('records')}>
+                    Records
+                  </Link>
+                  <Link href="/admin/employees" className={linkClass('employees')}>
+                    Employees
+                  </Link>
+                </>
               )}
             </nav>
           </div>
