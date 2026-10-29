@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/useAuth';
 import Shell from '@/components/Shell';
 import { fmtClock, fmtDate, fmtDateLong, fmtTime, hoursBetween } from '@/lib/time';
+import { dayKey, weekStartKey, monthStartKey, sumHours, formatHours } from '@/lib/stats';
 
 function friendlyError(message) {
   if (message.includes('duplicate key') || message.includes('one_open_log')) {
@@ -14,6 +15,15 @@ function friendlyError(message) {
     return 'You have not timed in yet.';
   }
   return message;
+}
+
+function StatCard({ label, value }) {
+  return (
+    <div className="rounded-2xl border border-ink/10 bg-white p-5">
+      <p className="text-sm text-ink/60">{label}</p>
+      <p className="mt-1 text-2xl font-semibold tabular-nums">{value}</p>
+    </div>
+  );
 }
 
 export default function DashboardPage() {
@@ -37,7 +47,7 @@ export default function DashboardPage() {
       .select('*')
       .eq('user_id', user.id)
       .order('time_in', { ascending: false })
-      .limit(60);
+      .limit(200);
     if (error) setError(error.message);
     else setLogs(data || []);
   }, [user]);
@@ -58,6 +68,15 @@ export default function DashboardPage() {
   }
 
   if (loading) return <p className="p-8 text-sm text-ink/60">Loading…</p>;
+
+  // Hour totals. A running (not yet timed out) record counts up to now.
+  const current = now || new Date();
+  const today = dayKey(current);
+  const weekStart = weekStartKey(current);
+  const monthStart = monthStartKey(current);
+  const todayHours = sumHours(logs.filter((l) => l.work_date === today), current);
+  const weekHours = sumHours(logs.filter((l) => l.work_date >= weekStart), current);
+  const monthHours = sumHours(logs.filter((l) => l.work_date >= monthStart), current);
 
   return (
     <Shell profile={profile} user={user} active="dashboard">
@@ -100,7 +119,13 @@ export default function DashboardPage() {
         </section>
 
         <section>
-          <h2 className="text-xl font-semibold">My records</h2>
+          <div className="grid gap-4 sm:grid-cols-3">
+            <StatCard label="Today" value={formatHours(todayHours)} />
+            <StatCard label="This week" value={formatHours(weekHours)} />
+            <StatCard label="This month" value={formatHours(monthHours)} />
+          </div>
+
+          <h2 className="mt-8 text-xl font-semibold">My records</h2>
           <div className="mt-4 overflow-x-auto rounded-2xl border border-ink/10 bg-white">
             <table className="w-full text-left text-sm">
               <thead className="border-b border-ink/10 text-ink/60">
@@ -119,7 +144,7 @@ export default function DashboardPage() {
                     </td>
                   </tr>
                 )}
-                {logs.map((log) => (
+                {logs.slice(0, 60).map((log) => (
                   <tr key={log.id} className="border-b border-ink/5 last:border-0">
                     <td className="px-4 py-3">{fmtDate(log.time_in)}</td>
                     <td className="px-4 py-3">{fmtTime(log.time_in)}</td>
