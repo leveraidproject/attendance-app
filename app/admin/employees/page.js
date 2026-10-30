@@ -63,32 +63,38 @@ export default function ApprovalsPage() {
 
   const pending = people.filter((p) => p.status === 'pending');
   const buttonBase =
-    'rounded-lg px-3 py-1.5 text-sm font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-brand disabled:opacity-50';
+    'rounded-full px-4 py-1.5 text-xs font-bold focus:outline-none focus-visible:ring-2 focus-visible:ring-brand disabled:opacity-50';
+  const approveClass = `${buttonBase} bg-clockin text-white hover:brightness-110`;
+  const declineClass = `${buttonBase} bg-red-100 text-red-800 hover:brightness-95`;
+  const roleClass = `${buttonBase} bg-tealtint text-ink hover:brightness-95`;
 
   return (
     <Shell profile={profile} user={user} active="approvals">
-      <h1 className="text-2xl font-semibold">Account approvals</h1>
+      <h1 className="text-3xl font-extrabold">Account approvals</h1>
       <p className="mt-1 text-sm text-ink/60">
         New accounts must be approved here before they can time in or out.
       </p>
 
-      {error && <p className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-800">{error}</p>}
+      {error && <p className="mt-4 rounded-2xl bg-red-50 p-3 text-sm font-semibold text-red-800">{error}</p>}
 
       <section className="mt-6">
-        <h2 className="text-lg font-semibold">Waiting for approval ({pending.length})</h2>
+        <h2 className="flex items-center gap-2 px-1 text-xl font-extrabold">
+          Waiting for approval
+          <span className="rounded-full bg-amber-400 px-2.5 py-0.5 text-sm font-bold text-ink">
+            {pending.length}
+          </span>
+        </h2>
         {pending.length === 0 ? (
-          <p className="mt-3 rounded-2xl border border-ink/10 bg-white p-5 text-sm text-ink/60">
-            No one is waiting right now.
-          </p>
+          <p className="mt-3 rounded-3xl bg-white p-6 text-sm text-ink/60">No one is waiting right now.</p>
         ) : (
           <ul className="mt-3 grid gap-3">
             {pending.map((p) => (
               <li
                 key={p.id}
-                className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-ink/10 bg-white p-4"
+                className="flex flex-wrap items-center justify-between gap-3 rounded-3xl bg-white p-5 ring-2 ring-amber-300"
               >
                 <div>
-                  <div className="font-medium">{p.full_name || 'No name'}</div>
+                  <div className="font-bold">{p.full_name || 'No name'}</div>
                   <div className="text-sm text-ink/60">{p.email}</div>
                   <div className="text-xs text-ink/50">Signed up {fmtDate(p.created_at)}</div>
                 </div>
@@ -96,14 +102,14 @@ export default function ApprovalsPage() {
                   <button
                     onClick={() => setStatus(p.id, 'approved')}
                     disabled={busyId === p.id}
-                    className={`${buttonBase} bg-clockin text-white hover:brightness-110`}
+                    className={approveClass}
                   >
                     Approve
                   </button>
                   <button
                     onClick={() => setStatus(p.id, 'rejected')}
                     disabled={busyId === p.id}
-                    className={`${buttonBase} border border-ink/20 text-ink hover:bg-ink/5`}
+                    className={declineClass}
                   >
                     Decline
                   </button>
@@ -115,41 +121,47 @@ export default function ApprovalsPage() {
       </section>
 
       <section className="mt-10">
-        <h2 className="text-lg font-semibold">Everyone ({people.length})</h2>
-        <div className="mt-3 overflow-x-auto rounded-2xl border border-ink/10 bg-white">
-          <table className="w-full text-left text-sm">
-            <thead className="border-b border-ink/10 text-ink/60">
-              <tr>
-                <th className="px-4 py-3 font-medium">Person</th>
-                <th className="px-4 py-3 font-medium">Role</th>
-                <th className="px-4 py-3 font-medium">Status</th>
-                <th className="px-4 py-3 font-medium">Last login</th>
-                <th className="px-4 py-3 font-medium">Actions</th>
+        <h2 className="px-1 text-xl font-extrabold">Everyone ({people.length})</h2>
+        <div className="overflow-x-auto">
+          <table className="w-full border-separate border-spacing-y-2 text-left text-sm">
+            <thead>
+              <tr className="text-xs uppercase tracking-widest text-ink/60">
+                <th className="px-5 py-2 font-bold">Person</th>
+                <th className="px-5 py-2 font-bold">Role</th>
+                <th className="px-5 py-2 font-bold">Status</th>
+                <th className="px-5 py-2 font-bold">Last login</th>
+                <th className="px-5 py-2 font-bold">Actions</th>
               </tr>
             </thead>
             <tbody>
               {people.map((p) => {
                 const isMe = p.id === user.id;
                 return (
-                  <tr key={p.id} className="border-b border-ink/5 last:border-0">
-                    <td className="px-4 py-3">
-                      <div className="font-medium">
-                        {p.full_name || 'No name'} {isMe && <span className="text-ink/50">(you)</span>}
+                  <tr key={p.id}>
+                    <td className="rounded-l-2xl bg-white px-5 py-4">
+                      <div className="font-bold">
+                        {p.full_name || 'No name'} {isMe && <span className="font-medium text-ink/50">(you)</span>}
                       </div>
                       <div className="text-xs text-ink/60">{p.email}</div>
                     </td>
-                    <td className="px-4 py-3 capitalize">{p.role}</td>
-                    <td className="px-4 py-3">
+                    <td className="bg-white px-5 py-4">
                       <span
-                        className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
-                          badgeClass[p.status] || ''
+                        className={`rounded-full px-3 py-1 text-xs font-bold capitalize ${
+                          p.role === 'admin' ? 'bg-ink text-white' : 'bg-mist text-ink'
                         }`}
+                      >
+                        {p.role}
+                      </span>
+                    </td>
+                    <td className="bg-white px-5 py-4">
+                      <span
+                        className={`rounded-full px-3 py-1 text-xs font-bold ${badgeClass[p.status] || ''}`}
                       >
                         {badgeText[p.status] || p.status}
                       </span>
                     </td>
-                    <td className="px-4 py-3">{lastLogin(p.last_sign_in_at)}</td>
-                    <td className="px-4 py-3">
+                    <td className="bg-white px-5 py-4">{lastLogin(p.last_sign_in_at)}</td>
+                    <td className="rounded-r-2xl bg-white px-5 py-4">
                       {isMe ? (
                         <span className="text-ink/40">—</span>
                       ) : (
@@ -158,7 +170,7 @@ export default function ApprovalsPage() {
                             <button
                               onClick={() => setStatus(p.id, 'approved')}
                               disabled={busyId === p.id}
-                              className={`${buttonBase} bg-clockin text-white hover:brightness-110`}
+                              className={approveClass}
                             >
                               Approve
                             </button>
@@ -171,7 +183,7 @@ export default function ApprovalsPage() {
                                 }
                               }}
                               disabled={busyId === p.id}
-                              className={`${buttonBase} border border-ink/20 hover:bg-ink/5`}
+                              className={declineClass}
                             >
                               Decline
                             </button>
@@ -184,7 +196,7 @@ export default function ApprovalsPage() {
                               }
                             }}
                             disabled={busyId === p.id}
-                            className={`${buttonBase} border border-ink/20 hover:bg-ink/5`}
+                            className={roleClass}
                           >
                             {p.role === 'admin' ? 'Make employee' : 'Make admin'}
                           </button>
