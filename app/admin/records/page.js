@@ -151,24 +151,39 @@ export default function AdminRecordsPage() {
   if (loading || !isAdmin) return <p className="p-8 text-sm text-ink/60">Loading…</p>;
 
   const inputClass =
-    'mt-1 rounded-lg border border-ink/20 bg-white px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/30';
+    'rounded-xl border border-ink/15 bg-mist px-3 py-2.5 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/30';
+  const labelClass = 'text-xs font-bold uppercase tracking-widest text-ink/70';
 
   return (
     <Shell profile={profile} user={user} active="records">
-      <h1 className="text-2xl font-semibold">Records</h1>
+      <h1 className="text-3xl font-extrabold">Records</h1>
 
-      <div className="mt-5 flex flex-wrap items-end gap-4">
-        <label className="text-sm font-medium">
+      <div className="mt-5 flex flex-wrap items-end gap-4 rounded-3xl bg-white p-5">
+        <label className={labelClass}>
           From
-          <input type="date" className={`${inputClass} block`} value={from} onChange={(e) => setFrom(e.target.value)} />
+          <input
+            type="date"
+            className={`${inputClass} mt-1 block font-medium normal-case tracking-normal`}
+            value={from}
+            onChange={(e) => setFrom(e.target.value)}
+          />
         </label>
-        <label className="text-sm font-medium">
+        <label className={labelClass}>
           To
-          <input type="date" className={`${inputClass} block`} value={to} onChange={(e) => setTo(e.target.value)} />
+          <input
+            type="date"
+            className={`${inputClass} mt-1 block font-medium normal-case tracking-normal`}
+            value={to}
+            onChange={(e) => setTo(e.target.value)}
+          />
         </label>
-        <label className="text-sm font-medium">
+        <label className={labelClass}>
           Employee
-          <select className={`${inputClass} block`} value={employeeId} onChange={(e) => setEmployeeId(e.target.value)}>
+          <select
+            className={`${inputClass} mt-1 block font-medium normal-case tracking-normal`}
+            value={employeeId}
+            onChange={(e) => setEmployeeId(e.target.value)}
+          >
             <option value="">All employees</option>
             {people.map((p) => (
               <option key={p.id} value={p.id}>
@@ -180,30 +195,30 @@ export default function AdminRecordsPage() {
         <button
           onClick={downloadCsv}
           disabled={rows.length === 0}
-          className="rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand/90 disabled:opacity-40"
+          className="min-h-[44px] rounded-full bg-ink px-6 text-sm font-bold text-white hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand disabled:opacity-40"
         >
           Download CSV
         </button>
       </div>
 
-      {error && <p className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-800">{error}</p>}
+      {error && <p className="mt-4 rounded-2xl bg-red-50 p-3 text-sm font-semibold text-red-800">{error}</p>}
 
-      <div className="mt-5 overflow-x-auto rounded-2xl border border-ink/10 bg-white">
-        <table className="w-full text-left text-sm">
-          <thead className="border-b border-ink/10 text-ink/60">
-            <tr>
-              <th className="px-4 py-3 font-medium">Employee</th>
-              <th className="px-4 py-3 font-medium">Date</th>
-              <th className="px-4 py-3 font-medium">Time in</th>
-              <th className="px-4 py-3 font-medium">Time out</th>
-              <th className="px-4 py-3 font-medium">Hours</th>
-              <th className="px-4 py-3 font-medium">Actions</th>
+      <div className="mt-3 overflow-x-auto">
+        <table className="w-full border-separate border-spacing-y-2 text-left text-sm">
+          <thead>
+            <tr className="text-xs uppercase tracking-widest text-ink/60">
+              <th className="px-5 py-2 font-bold">Employee</th>
+              <th className="px-5 py-2 font-bold">Date</th>
+              <th className="px-5 py-2 font-bold">Time in</th>
+              <th className="px-5 py-2 font-bold">Time out</th>
+              <th className="px-5 py-2 font-bold">Hours</th>
+              <th className="px-5 py-2 font-bold">Actions</th>
             </tr>
           </thead>
           <tbody>
             {!fetching && rows.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-ink/60">
+                <td colSpan={6} className="rounded-2xl bg-white px-5 py-8 text-center text-ink/60">
                   No records in this date range.
                 </td>
               </tr>
@@ -211,13 +226,13 @@ export default function AdminRecordsPage() {
             {rows.map((r) => {
               const editing = editingId === r.id;
               return (
-                <tr key={r.id} className="border-b border-ink/5 last:border-0">
-                  <td className="px-4 py-3">
-                    <div className="font-medium">{r.profiles?.full_name || '—'}</div>
+                <tr key={r.id}>
+                  <td className="rounded-l-2xl bg-white px-5 py-4">
+                    <div className="font-bold">{r.profiles?.full_name || '—'}</div>
                     <div className="text-xs text-ink/60">{r.profiles?.email}</div>
                   </td>
-                  <td className="px-4 py-3">{fmtDate(r.time_in)}</td>
-                  <td className="px-4 py-3">
+                  <td className="bg-white px-5 py-4">{fmtDate(r.time_in)}</td>
+                  <td className="bg-white px-5 py-4">
                     {editing ? (
                       <input
                         type="datetime-local"
@@ -229,7 +244,7 @@ export default function AdminRecordsPage() {
                       fmtTime(r.time_in)
                     )}
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="bg-white px-5 py-4">
                     {editing ? (
                       <input
                         type="datetime-local"
@@ -241,38 +256,34 @@ export default function AdminRecordsPage() {
                       fmtTime(r.time_out)
                     )}
                   </td>
-                  <td className="px-4 py-3">{r.time_out ? hoursBetween(r.time_in, r.time_out) : 'Running'}</td>
-                  <td className="px-4 py-3">
+                  <td className="bg-white px-5 py-4 font-semibold tabular-nums">
+                    {r.time_out ? (
+                      hoursBetween(r.time_in, r.time_out)
+                    ) : (
+                      <span className="rounded-full bg-tealtint px-3.5 py-1 text-xs font-extrabold text-[#0B4A55]">
+                        Running
+                      </span>
+                    )}
+                  </td>
+                  <td className="rounded-r-2xl bg-white px-5 py-4">
                     {editing ? (
-                      <div className="flex gap-3">
+                      <div className="flex gap-2">
                         <button
                           onClick={saveEdit}
                           disabled={saving}
-                          className="font-medium text-brand hover:underline disabled:opacity-40"
+                          className="rounded-full bg-ink px-4 py-1.5 text-xs font-bold text-white hover:brightness-110 disabled:opacity-40"
                         >
                           Save
                         </button>
-                        <button onClick={() => setEditingId(null)} className="font-medium text-ink/60 hover:underline">
+                        <button
+                          onClick={() => setEditingId(null)}
+                          className="rounded-full px-3 py-1.5 text-xs font-bold text-ink/70 hover:bg-mist"
+                        >
                           Cancel
                         </button>
                       </div>
                     ) : (
-                      <div className="flex gap-3">
-                        <button onClick={() => startEdit(r)} className="font-medium text-brand hover:underline">
-                          Edit
-                        </button>
-                        <button onClick={() => deleteRow(r)} className="font-medium text-red-700 hover:underline">
-                          Delete
-                        </button>
-                      </div>
-                    )}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-    </Shell>
-  );
-}
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => startEdit(r)}
+                          className="rounded-full bg-tealtint px-4
