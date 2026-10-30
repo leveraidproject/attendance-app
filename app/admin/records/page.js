@@ -286,4 +286,25 @@ export default function AdminRecordsPage() {
                       <div className="flex gap-2">
                         <button
                           onClick={() => startEdit(r)}
-                          className="rounded-full bg-tealtint px-4
+                          className="rounded-full bg-tealtint px-4 py-1.5 text-xs font-bold text-ink hover:brightness-95"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => deleteRow(r)}
+                          className="rounded-full bg-red-100 px-4 py-1.5 text-xs font-bold text-red-800 hover:brightness-95"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </Shell>
+  );
+}
