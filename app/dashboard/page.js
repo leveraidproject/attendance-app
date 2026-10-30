@@ -17,11 +17,11 @@ function friendlyError(message) {
   return message;
 }
 
-function StatCard({ label, value }) {
+function StatCard({ label, value, tint }) {
   return (
-    <div className="rounded-2xl border border-ink/10 bg-white p-5">
-      <p className="text-sm text-ink/60">{label}</p>
-      <p className="mt-1 text-2xl font-semibold tabular-nums">{value}</p>
+    <div className={`rounded-3xl p-6 ${tint}`}>
+      <p className="text-xs font-bold uppercase tracking-widest text-ink/70">{label}</p>
+      <p className="mt-2 text-4xl font-extrabold tabular-nums text-ink">{value}</p>
     </div>
   );
 }
@@ -80,84 +80,90 @@ export default function DashboardPage() {
 
   return (
     <Shell profile={profile} user={user} active="dashboard">
-      <div className="grid gap-6 lg:grid-cols-[380px_1fr]">
-        <section className="rounded-2xl bg-ink p-8 text-white">
-          <p className="text-sm text-white/70">{now ? fmtDateLong(now) : ' '}</p>
-          <p className="mt-2 text-4xl font-semibold tabular-nums sm:text-5xl">
+      <section
+        aria-label="Clock"
+        className="flex flex-wrap items-center justify-between gap-8 rounded-[2rem] bg-gradient-to-r from-ink to-brand p-8 text-white sm:p-12"
+      >
+        <div>
+          <p className="text-base font-semibold text-white/80">{now ? fmtDateLong(now) : ' '}</p>
+          <p className="mt-2 text-5xl font-extrabold tabular-nums leading-tight sm:text-7xl">
             {now ? fmtClock(now) : '--:--:--'}
           </p>
-
-          <div className="mt-6 flex items-center gap-2 text-sm">
+          <p className="mt-4 inline-flex items-center gap-2.5 rounded-full bg-white/15 px-4 py-2 text-sm font-bold">
             <span
               className={`inline-block h-2.5 w-2.5 rounded-full ${
-                openLog ? 'bg-green-400' : 'bg-white/40'
+                openLog ? 'bg-green-300' : 'bg-white/50'
               }`}
             />
-            <span>
-              {openLog ? `Timed in since ${fmtTime(openLog.time_in)}` : 'Not timed in'}
-            </span>
-          </div>
+            {openLog ? `Timed in since ${fmtTime(openLog.time_in)}` : 'Not timed in'}
+          </p>
+        </div>
 
-          <div className="mt-8 grid gap-3">
-            <button
-              onClick={() => run('clock_in')}
-              disabled={busy || Boolean(openLog)}
-              className="rounded-xl bg-clockin px-4 py-4 text-lg font-semibold hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-white disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              Time in
-            </button>
-            <button
-              onClick={() => run('clock_out')}
-              disabled={busy || !openLog}
-              className="rounded-xl bg-clockout px-4 py-4 text-lg font-semibold hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-white disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              Time out
-            </button>
-          </div>
+        <div className="grid w-full gap-3 sm:w-[300px]">
+          <button
+            onClick={() => run('clock_in')}
+            disabled={busy || Boolean(openLog)}
+            className="h-16 rounded-full border-2 border-white/60 text-xl font-extrabold tracking-wide text-white hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-white disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            TIME IN
+          </button>
+          <button
+            onClick={() => run('clock_out')}
+            disabled={busy || !openLog}
+            className="h-16 rounded-full bg-[#FF9A5C] text-xl font-extrabold tracking-wide text-ink hover:brightness-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-white disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            TIME OUT
+          </button>
+        </div>
 
-          {error && <p className="mt-4 rounded-lg bg-red-100 p-3 text-sm text-red-900">{error}</p>}
-        </section>
+        {error && (
+          <p className="w-full rounded-2xl bg-red-100 p-3 text-sm font-semibold text-red-900">{error}</p>
+        )}
+      </section>
 
-        <section>
-          <div className="grid gap-4 sm:grid-cols-3">
-            <StatCard label="Today" value={formatHours(todayHours)} />
-            <StatCard label="This week" value={formatHours(weekHours)} />
-            <StatCard label="This month" value={formatHours(monthHours)} />
-          </div>
+      <div className="mt-6 grid gap-5 sm:grid-cols-3">
+        <StatCard label="Today" value={formatHours(todayHours)} tint="bg-tealtint" />
+        <StatCard label="This week" value={formatHours(weekHours)} tint="bg-bluetint" />
+        <StatCard label="This month" value={formatHours(monthHours)} tint="bg-peachtint" />
+      </div>
 
-          <h2 className="mt-8 text-xl font-semibold">My records</h2>
-          <div className="mt-4 overflow-x-auto rounded-2xl border border-ink/10 bg-white">
-            <table className="w-full text-left text-sm">
-              <thead className="border-b border-ink/10 text-ink/60">
-                <tr>
-                  <th className="px-4 py-3 font-medium">Date</th>
-                  <th className="px-4 py-3 font-medium">Time in</th>
-                  <th className="px-4 py-3 font-medium">Time out</th>
-                  <th className="px-4 py-3 font-medium">Hours</th>
-                </tr>
-              </thead>
-              <tbody>
-                {logs.length === 0 && (
-                  <tr>
-                    <td colSpan={4} className="px-4 py-8 text-center text-ink/60">
-                      No records yet. Press Time in to start your first one.
-                    </td>
-                  </tr>
-                )}
-                {logs.slice(0, 60).map((log) => (
-                  <tr key={log.id} className="border-b border-ink/5 last:border-0">
-                    <td className="px-4 py-3">{fmtDate(log.time_in)}</td>
-                    <td className="px-4 py-3">{fmtTime(log.time_in)}</td>
-                    <td className="px-4 py-3">{fmtTime(log.time_out)}</td>
-                    <td className="px-4 py-3">
-                      {log.time_out ? hoursBetween(log.time_in, log.time_out) : 'Running'}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
+      <h2 className="mt-10 px-1 text-2xl font-extrabold">My records</h2>
+      <div className="overflow-x-auto">
+        <table className="w-full border-separate border-spacing-y-2 text-left text-sm">
+          <thead>
+            <tr className="text-xs uppercase tracking-widest text-ink/60">
+              <th className="px-6 py-2 font-bold">Date</th>
+              <th className="px-6 py-2 font-bold">Time in</th>
+              <th className="px-6 py-2 font-bold">Time out</th>
+              <th className="px-6 py-2 font-bold">Hours</th>
+            </tr>
+          </thead>
+          <tbody>
+            {logs.length === 0 && (
+              <tr>
+                <td colSpan={4} className="rounded-2xl bg-white px-6 py-8 text-center text-ink/60">
+                  No records yet. Press Time in to start your first one.
+                </td>
+              </tr>
+            )}
+            {logs.slice(0, 60).map((log) => (
+              <tr key={log.id}>
+                <td className="rounded-l-2xl bg-white px-6 py-4 font-bold">{fmtDate(log.time_in)}</td>
+                <td className="bg-white px-6 py-4">{fmtTime(log.time_in)}</td>
+                <td className="bg-white px-6 py-4">{fmtTime(log.time_out)}</td>
+                <td className="rounded-r-2xl bg-white px-6 py-4 font-semibold tabular-nums">
+                  {log.time_out ? (
+                    hoursBetween(log.time_in, log.time_out)
+                  ) : (
+                    <span className="rounded-full bg-tealtint px-3.5 py-1 text-xs font-extrabold text-[#0B4A55]">
+                      Running
+                    </span>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </Shell>
   );
