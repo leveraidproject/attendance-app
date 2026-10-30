@@ -30,52 +30,68 @@ export default function Shell({ profile, user, active, children }) {
   }
 
   const linkClass = (key) =>
-    `flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium ${
-      active === key ? 'bg-white/15 text-white' : 'text-white/70 hover:text-white'
+    `flex items-center gap-2 rounded-full px-5 py-2.5 text-sm ${
+      active === key
+        ? 'bg-ink font-bold text-white'
+        : 'font-semibold text-ink/70 hover:bg-white hover:text-ink'
     }`;
 
   return (
     <div className="min-h-screen">
-      <header className="bg-ink text-white">
-        <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 px-5 py-4">
-          <div className="flex flex-wrap items-center gap-4">
-            <span className="text-lg font-semibold">{COMPANY_NAME}</span>
-            <nav className="flex flex-wrap gap-1">
-              <Link href="/dashboard" className={linkClass('dashboard')}>
-                My time
+      <div className="mx-auto max-w-5xl px-5 pt-6">
+        <header className="flex flex-wrap items-center justify-between gap-3 rounded-3xl bg-white py-2.5 pl-6 pr-3 shadow-sm lg:rounded-full">
+          <Link href="/dashboard" className="flex items-center gap-3" aria-label={COMPANY_NAME}>
+            <img src="/logo-mark.png" alt="" className="h-10 w-auto" />
+            <span className="flex flex-col leading-none">
+              <span className="text-xl font-extrabold tracking-[0.14em] text-ink">
+                LEVER<span className="text-brand">AID</span>
+              </span>
+              <span className="mt-1 text-[8px] font-semibold tracking-[0.5em] text-ink">SOLUTIONS</span>
+            </span>
+          </Link>
+
+          <nav className="flex flex-wrap gap-1 rounded-full bg-[#F1F6F8] p-1" aria-label="Main">
+            <Link href="/dashboard" className={linkClass('dashboard')}>
+              My time
+            </Link>
+            {isAdmin && (
+              <Link href="/admin" className={linkClass('overview')}>
+                Overview
               </Link>
-              {isAdmin && (
-                <Link href="/admin" className={linkClass('admin')}>
-                  Admin
-                </Link>
-              )}
-              {isAdmin && (
-                <Link href="/admin/employees" className={linkClass('approvals')}>
-                  Approvals
-                  {pendingCount > 0 && (
-                    <span className="rounded-full bg-amber-400 px-2 py-0.5 text-xs font-semibold text-ink">
-                      {pendingCount}
-                    </span>
-                  )}
-                </Link>
-              )}
-            </nav>
-          </div>
+            )}
+            {isAdmin && (
+              <Link href="/admin/records" className={linkClass('records')}>
+                Records
+              </Link>
+            )}
+            {isAdmin && (
+              <Link href="/admin/employees" className={linkClass('approvals')}>
+                Approvals
+                {pendingCount > 0 && (
+                  <span className="rounded-full bg-amber-400 px-2 py-0.5 text-xs font-bold text-ink">
+                    {pendingCount}
+                  </span>
+                )}
+              </Link>
+            )}
+          </nav>
+
           <div className="flex items-center gap-3 text-sm">
-            <span className="text-white/70">{name}</span>
+            <span className="font-semibold text-ink/70">{name}</span>
             <button
               onClick={logout}
-              className="rounded-lg border border-white/30 px-3 py-1.5 font-medium hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+              className="min-h-[44px] rounded-full bg-tealtint px-5 font-bold text-ink hover:brightness-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
             >
               Log out
             </button>
           </div>
-        </div>
-      </header>
+        </header>
+      </div>
+
       <main className="mx-auto max-w-5xl px-5 py-8">
         {blocked ? (
-          <div className="mx-auto max-w-md rounded-2xl border border-ink/10 bg-white p-8 text-center">
-            <h1 className="text-xl font-semibold">
+          <div className="mx-auto max-w-md rounded-3xl bg-white p-8 text-center shadow-sm">
+            <h1 className="text-xl font-extrabold">
               {status === 'rejected' ? 'Your account was declined' : 'Waiting for approval'}
             </h1>
             <p className="mt-3 text-ink/70">
