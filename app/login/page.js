@@ -6,7 +6,8 @@ import { supabase, isConfigured } from '@/lib/supabase';
 import { COMPANY_NAME } from '@/lib/config';
 
 const inputClass =
-  'mt-1 w-full rounded-lg border border-ink/20 bg-white px-3 py-2.5 text-base focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/30';
+  'mt-1 w-full rounded-xl border border-ink/15 bg-mist px-4 py-3 text-base focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/30';
+const labelClass = 'block text-sm font-bold';
 
 function EyeIcon({ open }) {
   return open ? (
@@ -27,7 +28,7 @@ function EyeIcon({ open }) {
 function PasswordField({ id, label, value, onChange, autoComplete, show, onToggle }) {
   return (
     <div className="mt-4">
-      <label htmlFor={id} className="block text-sm font-medium">
+      <label htmlFor={id} className={labelClass}>
         {label}
       </label>
       <div className="relative">
@@ -46,7 +47,7 @@ function PasswordField({ id, label, value, onChange, autoComplete, show, onToggl
           onClick={onToggle}
           aria-label={show ? 'Hide password' : 'Show password'}
           aria-pressed={show}
-          className="absolute right-1 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-lg text-ink/60 hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+          className="absolute right-1.5 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full text-ink/60 hover:bg-white hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
         >
           <EyeIcon open={show} />
         </button>
@@ -128,36 +129,39 @@ export default function LoginPage() {
 
   return (
     <div className="grid min-h-screen lg:grid-cols-[1fr_1fr]">
-      <div className="flex flex-col justify-between bg-ink p-8 text-white lg:p-14">
-        <p className="text-lg font-semibold">{COMPANY_NAME}</p>
+      <div className="flex flex-col justify-between bg-gradient-to-br from-ink to-brand p-8 text-white lg:p-14">
+        <div className="inline-flex w-fit rounded-3xl bg-white p-4 shadow-sm">
+          <img src="/logo-full.png" alt={COMPANY_NAME} className="h-24 w-auto lg:h-32" />
+        </div>
         <div className="py-12">
-          <h1 className="text-4xl font-semibold leading-tight lg:text-5xl">
+          <h1 className="text-4xl font-extrabold leading-tight lg:text-5xl">
             Start your shift.
             <br />
             End it. We keep the record.
           </h1>
-          <p className="mt-4 max-w-sm text-white/70">
+          <p className="mt-4 max-w-sm text-lg text-white/80">
             Log in to time in and time out. Your hours are saved automatically.
           </p>
         </div>
-        <p className="text-sm text-white/50">Times shown in Philippine time</p>
+        <p className="text-sm font-medium text-white/70">Times shown in Philippine time</p>
       </div>
 
-      <div className="flex items-center justify-center p-8">
-        <form onSubmit={handleSubmit} className="w-full max-w-sm">
-          <h2 className="text-2xl font-semibold">
-            {isSignup ? 'Create your account' : 'Log in'}
-          </h2>
+      <div className="flex items-center justify-center p-6 lg:p-8">
+        <form onSubmit={handleSubmit} className="w-full max-w-md rounded-[2rem] bg-white p-8 shadow-sm">
+          <h2 className="text-3xl font-extrabold">{isSignup ? 'Create your account' : 'Log in'}</h2>
+          <p className="mt-1 text-sm text-ink/60">
+            {isSignup ? 'An admin will approve your account after you sign up.' : 'Welcome back.'}
+          </p>
 
           {!isConfigured && (
-            <p className="mt-4 rounded-lg bg-amber-100 p-3 text-sm text-amber-900">
+            <p className="mt-4 rounded-2xl bg-amber-100 p-3 text-sm text-amber-900">
               The app is not connected to Supabase yet. Add the two environment settings
               (see README), then redeploy.
             </p>
           )}
 
           {isSignup && (
-            <label className="mt-6 block text-sm font-medium">
+            <label className={`mt-6 ${labelClass}`}>
               Full name
               <input
                 className={inputClass}
@@ -169,7 +173,7 @@ export default function LoginPage() {
             </label>
           )}
 
-          <label className="mt-4 block text-sm font-medium">
+          <label className={`mt-4 ${labelClass}`}>
             Email
             <input
               type="email"
@@ -203,21 +207,21 @@ export default function LoginPage() {
                 onToggle={() => setShowPassword((v) => !v)}
               />
               {mismatch && (
-                <p className="mt-2 text-sm text-red-700" role="alert">
+                <p className="mt-2 text-sm font-semibold text-red-700" role="alert">
                   Passwords do not match.
                 </p>
               )}
-              {matches && <p className="mt-2 text-sm text-green-700">Passwords match.</p>}
+              {matches && <p className="mt-2 text-sm font-semibold text-green-700">Passwords match.</p>}
             </>
           )}
 
-          {error && <p className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-800">{error}</p>}
-          {notice && <p className="mt-4 rounded-lg bg-green-50 p-3 text-sm text-green-800">{notice}</p>}
+          {error && <p className="mt-4 rounded-2xl bg-red-50 p-3 text-sm font-semibold text-red-800">{error}</p>}
+          {notice && <p className="mt-4 rounded-2xl bg-green-50 p-3 text-sm font-semibold text-green-800">{notice}</p>}
 
           <button
             type="submit"
             disabled={busy || mismatch}
-            className="mt-6 w-full rounded-lg bg-brand px-4 py-3 font-semibold text-white hover:bg-brand/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 disabled:opacity-60"
+            className="mt-6 h-14 w-full rounded-full bg-brand px-4 text-base font-extrabold text-white hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 disabled:opacity-60"
           >
             {busy ? 'Please wait…' : isSignup ? 'Create account' : 'Log in'}
           </button>
@@ -232,7 +236,7 @@ export default function LoginPage() {
                 setError('');
                 setNotice('');
               }}
-              className="font-semibold text-brand hover:underline"
+              className="font-bold text-brand hover:underline"
             >
               {isSignup ? 'Log in' : 'Create an account'}
             </button>
