@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/useAuth';
@@ -8,11 +9,11 @@ import Shell from '@/components/Shell';
 import { fmtTime } from '@/lib/time';
 import { dayKey, weekStartKey, logHours, sumHours, formatHours } from '@/lib/stats';
 
-function StatCard({ label, value }) {
+function StatCard({ label, value, tint }) {
   return (
-    <div className="rounded-2xl border border-ink/10 bg-white p-5">
-      <p className="text-sm text-ink/60">{label}</p>
-      <p className="mt-1 text-2xl font-semibold tabular-nums">{value}</p>
+    <div className={`rounded-3xl p-6 ${tint}`}>
+      <p className="text-xs font-bold uppercase tracking-widest text-ink/70">{label}</p>
+      <p className="mt-2 text-4xl font-extrabold tabular-nums text-ink">{value}</p>
     </div>
   );
 }
@@ -20,7 +21,7 @@ function StatCard({ label, value }) {
 export default function AdminOverviewPage() {
   const router = useRouter();
   const { user, profile, loading } = useAuth();
-  const [employees, setEmployees] = useState([]);
+  const [people, setPeople] = useState([]);
   const [weekLogs, setWeekLogs] = useState([]);
   const [openLogs, setOpenLogs] = useState([]);
   const [now, setNow] = useState(new Date());
@@ -35,8 +36,8 @@ export default function AdminOverviewPage() {
 
   const load = useCallback(async () => {
     setError('');
-    const [people, week, open] = await Promise.all([
-      supabase.from('profiles').select('id'),
+    const [profilesRes, week, open] = await Promise.all([
+      supabase.from('profiles').select('id, status'),
       supabase.from('time_logs').select('*').gte('work_date', weekStartKey()),
       supabase
         .from('time_logs')
@@ -44,12 +45,12 @@ export default function AdminOverviewPage() {
         .is('time_out', null)
         .order('time_in', { ascending: true }),
     ]);
-    const firstError = people.error || week.error || open.error;
+    const firstError = profilesRes.error || week.error || open.error;
     if (firstError) {
       setError(firstError.message);
       return;
     }
-    setEmployees(people.data || []);
+    setPeople(profilesRes.data || []);
     setWeekLogs(week.data || []);
     setOpenLogs(open.data || []);
     setNow(new Date());
@@ -68,53 +69,73 @@ export default function AdminOverviewPage() {
   const today = dayKey(now);
   const todayHours = sumHours(weekLogs.filter((l) => l.work_date === today), now);
   const weekHours = sumHours(weekLogs, now);
+  const approvedCount = people.filter((p) => (p.status ?? 'approved') === 'approved').length;
+  const pendingCount = people.filter((p) => p.status === 'pending').length;
 
   return (
     <Shell profile={profile} user={user} active="overview">
-      <h1 className="text-2xl font-semibold">Overview</h1>
+      <h1 className="text-3xl font-extrabold">Overview</h1>
 
-      {error && <p className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-800">{error}</p>}
+      {pendingCount > 0 && (
+        <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-3xl bg-tealtint p-5">
+          <p className="font-bold text-ink">
+            {pendingCount} {pendingCount === 1 ? 'account is' : 'accounts are'} waiting for your approval.
+          </p>
+          <Link
+            href="/admin/employees"
+            className="rounded-full bg-ink px-5 py-2.5 text-sm font-bold text-white hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+          >
+            Review now
+          </Link>
+        </div>
+      )}
 
-      <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Total employees" value={employees.length} />
-        <StatCard label="Timed in right now" value={openLogs.length} />
-        <StatCard label="Hours today" value={formatHours(todayHours)} />
-        <StatCard label="Hours this week" value={formatHours(weekHours)} />
+      {error && <p className="mt-4 rounded-2xl bg-red-50 p-3 text-sm font-semibold text-red-800">{error}</p>}
+
+      <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <StatCard label="Employees" value={approvedCount} tint="bg-tealtint" />
+        <StatCard label="Timed in now" value={openLogs.length} tint="bg-bluetint" />
+        <StatCard label="Hours today" value={formatHours(todayHours)} tint="bg-peachtint" />
+        <StatCard label="Hours this week" value={formatHours(weekHours)} tint="bg-white" />
       </div>
 
-      <h2 className="mt-8 text-xl font-semibold">Working right now</h2>
-      <div className="mt-4 overflow-x-auto rounded-2xl border border-ink/10 bg-white">
-        <table className="w-full text-left text-sm">
-          <thead className="border-b border-ink/10 text-ink/60">
-            <tr>
-              <th className="px-4 py-3 font-medium">Employee</th>
-              <th className="px-4 py-3 font-medium">Timed in at</th>
-              <th className="px-4 py-3 font-medium">Time so far</th>
+      <h2 className="mt-10 px-1 text-2xl font-extrabold">Working right now</h2>
+      <div className="overflow-x-auto">
+        <table className="w-full border-separate border-spacing-y-2 text-left text-sm">
+          <thead>
+            <tr className="text-xs uppercase tracking-widest text-ink/60">
+              <th className="px-6 py-2 font-bold">Employee</th>
+              <th className="px-6 py-2 font-bold">Timed in at</th>
+              <th className="px-6 py-2 font-bold">Time so far</th>
             </tr>
           </thead>
           <tbody>
             {openLogs.length === 0 && (
               <tr>
-                <td colSpan={3} className="px-4 py-8 text-center text-ink/60">
+                <td colSpan={3} className="rounded-2xl bg-white px-6 py-8 text-center text-ink/60">
                   Nobody is timed in right now.
                 </td>
               </tr>
             )}
             {openLogs.map((log) => (
-              <tr key={log.id} className="border-b border-ink/5 last:border-0">
-                <td className="px-4 py-3">
-                  <div className="font-medium">{log.profiles?.full_name || '—'}</div>
+              <tr key={log.id}>
+                <td className="rounded-l-2xl bg-white px-6 py-4">
+                  <div className="font-bold">{log.profiles?.full_name || '—'}</div>
                   <div className="text-xs text-ink/60">{log.profiles?.email}</div>
                 </td>
-                <td className="px-4 py-3">{fmtTime(log.time_in)}</td>
-                <td className="px-4 py-3">{formatHours(logHours(log, now))}</td>
+                <td className="bg-white px-6 py-4">{fmtTime(log.time_in)}</td>
+                <td className="rounded-r-2xl bg-white px-6 py-4">
+                  <span className="rounded-full bg-tealtint px-3.5 py-1 text-xs font-extrabold tabular-nums text-[#0B4A55]">
+                    {formatHours(logHours(log, now))}
+                  </span>
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
 
-      <p className="mt-3 text-xs text-ink/50">This page refreshes by itself every 30 seconds.</p>
+      <p className="mt-3 px-1 text-xs text-ink/50">This page refreshes by itself every 30 seconds.</p>
     </Shell>
   );
 }
